@@ -1,5 +1,7 @@
 # Palette Diary
 
+![Palette Diary](docs/screenshot.jpg)
+
 A minimal photo palette extractor. Upload a photo and get its dominant colours as hex codes, ready to copy.
 
 **Live demo:** https://chengwq95.github.io/palette-diary/
