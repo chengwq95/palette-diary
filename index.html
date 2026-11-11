@@ -4,9 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/1829/1829586.png">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%94%3C/text%3E%3C/svg%3E">
   
   <title>Palette Diary</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Palette Diary">
+  <meta property="og:description" content="Upload, drop or paste a photo and get its dominant colours as hex codes. Runs entirely in your browser; photos are never uploaded.">
+  <meta property="og:url" content="https://chengwq95.github.io/palette-diary/">
+  <meta property="og:image" content="https://chengwq95.github.io/palette-diary/docs/screenshot.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="description" content="Upload, drop or paste a photo and get its dominant colours as hex codes. Runs entirely in your browser; photos are never uploaded.">
   <style>
     * {
       box-sizing: border-box;
@@ -188,6 +195,11 @@
       background: rgba(255, 255, 255, 0.06);
     }
 
+    .photo-card.dragging {
+      outline: 2px dashed #a3a3a3;
+      outline-offset: 4px;
+    }
+
     .palette-list h2 {
       margin: 0 0 16px;
       color: #d4d4d4;
@@ -280,7 +292,7 @@
         <div class="upload-emoji">🖼️</div>
         <div>
           <p class="upload-title">Upload a Photo</p>
-          <p class="upload-desc">Extract beautiful colors from your memories.</p>
+          <p class="upload-desc">Extract beautiful colors from your memories.<br>You can also drop or paste an image.</p>
         </div>
         <input type="file" accept="image/*" class="hidden file-input" />
       </label>
@@ -429,6 +441,22 @@
 
         paletteList.appendChild(row);
       });
+
+      if (colors.length) {
+        const all = document.createElement("button");
+        all.className = "color-row";
+        all.innerHTML = `<div class="color-info"><div class="color-text"><div class="color-hex">All ${colors.length} colors</div><div class="color-rgb">${colors.map((c) => c.hex).join("  ")}</div></div></div><span class="copy-text">Copy all</span>`;
+        all.onclick = async () => {
+          const text = colors.map((c) => c.hex).join(", ");
+          try {
+            await navigator.clipboard.writeText(text);
+            showToast("Copied all colors");
+          } catch {
+            showToast(text);
+          }
+        };
+        paletteList.appendChild(all);
+      }
     }
 
     function renderPhoto(result, colors) {
@@ -454,6 +482,10 @@
 
     function handleFile(file) {
       if (!file) return;
+      if (!file.type || !file.type.startsWith("image/")) {
+        showToast("Please choose an image file");
+        return;
+      }
 
       const reader = new FileReader();
 
@@ -477,6 +509,35 @@
       input.addEventListener("change", (event) => {
         handleFile(event.target.files[0]);
       });
+    });
+
+    // Drop an image anywhere on the page
+    ["dragenter", "dragover"].forEach((type) => {
+      document.addEventListener(type, (event) => {
+        event.preventDefault();
+        photoCard.classList.add("dragging");
+      });
+    });
+    ["dragleave", "drop"].forEach((type) => {
+      document.addEventListener(type, (event) => {
+        event.preventDefault();
+        photoCard.classList.remove("dragging");
+      });
+    });
+    document.addEventListener("drop", (event) => {
+      const file = event.dataTransfer && event.dataTransfer.files[0];
+      handleFile(file);
+    });
+
+    // Paste an image from the clipboard
+    document.addEventListener("paste", (event) => {
+      const items = (event.clipboardData && event.clipboardData.items) || [];
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          handleFile(item.getAsFile());
+          return;
+        }
+      }
     });
   </script>
 </body>

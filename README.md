@@ -8,7 +8,8 @@ A minimal photo palette extractor. Upload a photo and get its dominant colours a
 
 ## Features
 
-- Extracts up to 6 dominant colours from any photo
+- Extracts up to 6 dominant colours from any photo (upload, drag and drop, or paste)
+- Copy a single colour or the whole palette
 - Runs entirely in the browser; photos are never uploaded anywhere
 - Single HTML file, no build step, no dependencies
 
